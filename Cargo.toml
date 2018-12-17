@@ -2,6 +2,8 @@
 name = "http_static"
 version = "0.1.0"
 authors = ["arjun <arj1singh@gmail.com>"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/arjsin/http_static"
 edition = "2018"
 
 [dependencies]
