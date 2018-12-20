@@ -14,14 +14,16 @@ use tower_web::{
 
 #[derive(Clone, Debug)]
 pub struct FileServing {
-    dir: Arc<PathBuf>,
+    root: PathBuf,
+    index: Arc<PathBuf>,
     default: Arc<PathBuf>,
 }
 
 impl FileServing {
-    pub fn new(dir: &str, default: &str) -> Self {
+    pub fn new(root: &str, index: &str, default: &str) -> Self {
         FileServing {
-            dir: Arc::new(PathBuf::from(dir)),
+            root: PathBuf::from(root),
+            index: Arc::new(PathBuf::from(index)),
             default: Arc::new(PathBuf::from(default)),
         }
     }
@@ -31,24 +33,29 @@ impl_web! {
     impl FileServing {
         #[get("/")]
         fn root(&self) -> impl Future<Item = File, Error = io::Error> {
+            let mut root = self.root.clone();
             let default = self.default.clone();
-            TokioFile::open((*self.default).clone())
-                .map(move |f| File::new(f, guess_mime_type(default.as_ref())))
+            root.push(&*self.index);
+            TokioFile::open(root.clone())
+                .map(move |f| File::new(f, guess_mime_type(root)))
+                .or_else(move |_| {
+                    TokioFile::open((*default).clone()).map(move |f| File::new(f, guess_mime_type(default.as_ref())))
+                })
         }
 
         #[get("/*relative_path")]
         fn files(&self, relative_path: PathBuf) -> impl Future<Item = File, Error = io::Error> {
-            let mut path = PathBuf::from(".");
+            let mut path = self.root.clone();
             path.push(relative_path);
 
-            let dir = self.dir.clone();
+            let index = self.index.clone();
             let default = self.default.clone();
             TokioFile::open(path.clone())
                 .and_then(|f| f.metadata())
                 .and_then(move |(f, m)| {
                     if m.is_dir() {
-                        path.push(dir.as_ref());
-                        Either::A(TokioFile::open(path).map(move |f| (f, guess_mime_type(dir.as_ref()))))
+                        path.push(index.as_ref());
+                        Either::A(TokioFile::open(path).map(move |f| (f, guess_mime_type(index.as_ref()))))
                     } else {
                         Either::B(ok((f, guess_mime_type(path))))
                     }

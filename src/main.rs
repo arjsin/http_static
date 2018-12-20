@@ -42,7 +42,7 @@ fn serve(addr: &SocketAddr) {
     println!("Listening on http://{}", addr);
 
     ServiceBuilder::new()
-        .resource(FileServing::new("index.html", "./index.html"))
+        .resource(FileServing::new(".", "index.html", "./index.html"))
         .run(addr)
         .unwrap();
 }
