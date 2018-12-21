@@ -43,18 +43,15 @@ impl InMemoryServing {
             .and_then(|list| ok(stream::iter_ok(list)))
             .flatten_stream()
             .and_then(|path| Self::file_data(path.clone()).map(|data| (path, data)))
-            .fold(HashMap::new(), move |mut map, (mut path, data)| {
+            .fold(HashMap::new(), move |mut map, (path, data)| {
                 let in_mem = InMemory::new(data, guess_mime(&path).as_ref());
-                path = if path.ends_with(index.as_ref()) {
-                    path.strip_prefix(root.as_ref())
-                        .unwrap()
-                        .parent()
-                        .unwrap()
-                        .to_path_buf()
+                let path = path.strip_prefix(root.as_ref()).unwrap();
+                let path = if path.ends_with(index.as_ref()) {
+                    path.parent().unwrap()
                 } else {
-                    path.strip_prefix(root.as_ref()).unwrap().to_path_buf()
+                    path
                 };
-                map.insert(path, Arc::new(in_mem));
+                map.insert(path.to_path_buf(), Arc::new(in_mem));
                 ok::<_, io::Error>(map)
             });
 
