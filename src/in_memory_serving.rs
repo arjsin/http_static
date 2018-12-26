@@ -12,6 +12,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
+use lazy_static::lazy_static;
 use tower_web::{
     derive_resource, derive_resource_impl, error, impl_web, impl_web_clean_nested,
     impl_web_clean_top_level,
@@ -21,7 +22,7 @@ use tower_web::{
 
 #[derive(Clone, Debug)]
 pub struct InMemoryServing {
-    default: Arc<InMemory>,
+    default: Option<Arc<InMemory>>,
     files: HashMap<PathBuf, Arc<InMemory>>,
 }
 
@@ -36,7 +37,8 @@ impl InMemoryServing {
     {
         let default_mime = guess_mime(&default);
         let fut_default = Self::file_data(default)
-            .map(move |data| Arc::new(InMemory::new(data, default_mime.as_ref())));
+            .map(move |data| Some(Arc::new(InMemory::new(data, default_mime.as_ref()))))
+            .or_else(|_| Ok(None));
 
         let fut_files = Self::file_tree(root.as_ref().to_path_buf())
             .concat2()
@@ -103,13 +105,24 @@ impl InMemoryServing {
     }
 }
 
+lazy_static! {
+    static ref NotFound: Arc<InMemory> = Arc::new(InMemory {
+        data: Bytes::from("Not Found"),
+        mime: "text/plain".into(),
+        status: 404,
+    });
+}
+
 impl_web! {
     impl InMemoryServing {
         #[get("/")]
         fn root(&self) -> Result<LocalArc<InMemory>, ()> {
             match self.files.get(&PathBuf::from("")) {
                 Some(file) => Ok(LocalArc(file.clone())),
-                None => Ok(LocalArc(self.default.clone())),
+                None => match self.default {
+                    Some(ref x) => Ok(LocalArc(x.clone())),
+                    None => Ok(LocalArc(NotFound.clone())),
+                },
             }
         }
 
@@ -117,7 +130,10 @@ impl_web! {
         fn files(&self, relative_path: PathBuf) -> Result<LocalArc<InMemory>, ()> {
             match self.files.get(&relative_path) {
                 Some(file) => Ok(LocalArc(file.clone())),
-                None => Ok(LocalArc(self.default.clone())),
+                None => match self.default {
+                    Some(ref x) => Ok(LocalArc(x.clone())),
+                    None => Ok(LocalArc(NotFound.clone())),
+                },
             }
         }
     }
@@ -125,10 +141,10 @@ impl_web! {
 
 struct LocalArc<T>(Arc<T>);
 
-#[derive(Clone)]
 struct InMemory {
     data: Bytes,
     mime: String,
+    status: u16,
 }
 
 impl fmt::Debug for InMemory {
@@ -142,6 +158,7 @@ impl InMemory {
         InMemory {
             data: data.into(),
             mime: mime.into(),
+            status: 200,
         }
     }
 }
@@ -157,7 +174,7 @@ impl Response for LocalArc<InMemory> {
         let content_type = header::HeaderValue::from_str(self.0.mime.as_ref()).unwrap();
 
         Ok(http::Response::builder()
-            .status(200)
+            .status(self.0.status)
             .header(header::CONTENT_TYPE, content_type)
             .body(error::Map::new(self.0.data.clone()))
             .unwrap())
