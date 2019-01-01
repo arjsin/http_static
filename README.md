@@ -55,10 +55,12 @@ FLAGS:
     -V, --version      Prints version information
 
 OPTIONS:
-    -d, --default <PATH>      Sets path of a file which is served when the file requested in not available, default: index.html
-    -i, --index <FILENAME>    Sets file name inside each directory to be served at path of directory, default: index.html
-    -l, --listen <ADDRESS>    Sets the address to listen on, default: [::1]:8080
-    -r, --root <PATH>         Sets path of a directory for serving files, default: .
+    -d, --default <PATH>         Sets path of a file which is served when the file requested in not available, default: index.html
+    -i, --index <FILENAME>       Sets file name inside each directory to be served at path of directory, default: index.html
+    -l, --listen <ADDRESS>       Sets the address to listen on, default: [::1]:8080
+    -r, --root <PATH>            Sets path of a directory for serving files, default: .
+        --tls_cert <FILENAME>    Sets file name for TLS certificate, must be present with TLS private key
+        --tls_key <FILENAME>     Sets file name for tls private key, must be present with TLS certificate
 ```
 
 ## TODO
