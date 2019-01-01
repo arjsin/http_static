@@ -5,6 +5,7 @@ use futures::{
     stream,
 };
 use http::{self, header};
+use lazy_static::lazy_static;
 use mime_guess::guess_mime_type as guess_mime;
 use std::{
     collections::HashMap,
@@ -12,7 +13,6 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use lazy_static::lazy_static;
 use tower_web::{
     derive_resource, derive_resource_impl, error, impl_web, impl_web_clean_nested,
     impl_web_clean_top_level,

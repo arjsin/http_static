@@ -67,5 +67,5 @@ OPTIONS:
 - [ ] Logging
 - [ ] In memory serving, `304 Not Modified` support
 - [ ] In memory serving, file change notification support
-- [ ] HTTPS support
+- [x] HTTPS support
 - [ ] Directory listing
