@@ -26,7 +26,7 @@ use tower_web::{net::ConnectionStream, ServiceBuilder};
 fn main() {
     let matches = clap_app!(http_static =>
         (version: crate_version!())
-        (about: "A lightwight static file server for HTTP")
+        (about: "A lightweight static file server for HTTP")
         (@arg in_mem: -m --in_memory "Sets in memory file server")
         (@arg listen: -l --listen [ADDRESS] "Sets the address to listen on, default: [::1]:8080")
         (@arg root: -r --root [PATH] "Sets path of a directory for serving files, default: .")

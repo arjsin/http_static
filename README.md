@@ -44,7 +44,7 @@ cargo run --release -- -h
 ```
 ```
 http_static
-A lightwight static file server for HTTP
+A lightweight static file server for HTTP
 
 USAGE:
     http_static [FLAGS] [OPTIONS]
@@ -60,7 +60,7 @@ OPTIONS:
     -l, --listen <ADDRESS>       Sets the address to listen on, default: [::1]:8080
     -r, --root <PATH>            Sets path of a directory for serving files, default: .
         --tls_cert <FILENAME>    Sets file name for TLS certificate, must be present with TLS private key
-        --tls_key <FILENAME>     Sets file name for tls private key, must be present with TLS certificate
+        --tls_key <FILENAME>     Sets file name for TLS private key, must be present with TLS certificate
 ```
 
 ## TODO
