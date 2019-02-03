@@ -106,7 +106,7 @@ impl InMemoryServing {
 }
 
 lazy_static! {
-    static ref NotFound: Arc<InMemory> = Arc::new(InMemory {
+    static ref NOT_FOUND: Arc<InMemory> = Arc::new(InMemory {
         data: Bytes::from("Not Found"),
         mime: "text/plain".into(),
         status: 404,
@@ -121,7 +121,7 @@ impl_web! {
                 Some(file) => Ok(LocalArc(file.clone())),
                 None => match self.default {
                     Some(ref x) => Ok(LocalArc(x.clone())),
-                    None => Ok(LocalArc(NotFound.clone())),
+                    None => Ok(LocalArc(NOT_FOUND.clone())),
                 },
             }
         }
@@ -132,7 +132,7 @@ impl_web! {
                 Some(file) => Ok(LocalArc(file.clone())),
                 None => match self.default {
                     Some(ref x) => Ok(LocalArc(x.clone())),
-                    None => Ok(LocalArc(NotFound.clone())),
+                    None => Ok(LocalArc(NOT_FOUND.clone())),
                 },
             }
         }

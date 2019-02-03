@@ -14,7 +14,7 @@ lazy_static = "1.2"
 mime_guess = "2.0.0-alpha.6"
 tokio = "0.1"
 tokio-rustls = "0.8"
-tower-web = "0.3.3"
+tower-web = { version = "0.3.4", features = ["rustls"]}
 http = "0.1"
 
 [profile.release]

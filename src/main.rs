@@ -1,8 +1,6 @@
 mod file_serving;
 mod in_memory_serving;
-mod tls_connection;
 
-use self::tls_connection::TlsConnection;
 use self::{file_serving::FileServing, in_memory_serving::InMemoryServing};
 use clap::{clap_app, crate_version};
 use futures::prelude::*;
@@ -13,14 +11,15 @@ use std::{
     path::PathBuf,
     sync::Arc,
 };
-use tokio::net::TcpListener;
+use tokio::net::{TcpListener, TcpStream};
 use tokio_rustls::{
     rustls::{
         internal::pemfile::{certs, rsa_private_keys},
-        Certificate, NoClientAuth, PrivateKey, ServerConfig,
+        Certificate, NoClientAuth, PrivateKey, ServerConfig, ServerSession,
     },
-    TlsAcceptor,
+    TlsAcceptor, TlsStream,
 };
+
 use tower_web::{net::ConnectionStream, ServiceBuilder};
 
 fn main() {
@@ -91,7 +90,7 @@ fn tls_incoming(
     certs: &str,
     keys: &str,
     addr: &SocketAddr,
-) -> impl Stream<Item = TlsConnection, Error = io::Error> {
+) -> impl Stream<Item = TlsStream<TcpStream, ServerSession>, Error = io::Error> {
     let tls_config = {
         let mut config = ServerConfig::new(NoClientAuth::new());
         config
@@ -108,7 +107,6 @@ fn tls_incoming(
             Err(_) => Ok(None), // TODO: log TLS errors here
         })
         .filter_map(|x| x)
-        .map(|x| x.into())
 }
 
 fn serve_in_memory<CS>(incoming: CS, root: &str, index: &str, default: &str)
